@@ -2,6 +2,9 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import Edge, First, NextTimeStep
 import tkinter as tk
+import time
+
+realistic_gui = True 
 
 
 @cocotb.test()
@@ -10,7 +13,6 @@ async def cocotb_test(dut):
     await cocotb.start(c.start())
     await reset(dut)
     digit0 = digit1 = digit2 = digit3 = 0xFE
-    change = True
     root = tk.Tk()
     root.title("7 segment display")
     screen = tk.Canvas(root)
@@ -21,30 +23,28 @@ async def cocotb_test(dut):
     dig3 = Digit(screen, 100, 10)
     while True:
         digit_num, digit = await read_seg(dut)
-        if digit_num == 0 and digit0 != digit: 
+        if (realistic_gui):
+            dig0.show(10)
+            dig1.show(10)
+            dig2.show(10)
+            dig3.show(10)
+        if digit_num == 0: 
             digit0 = digit
-            change = True
-        elif digit_num == 1 and digit1 != digit:
-            digit1 = digit
-            change = True
-        elif digit_num == 2 and digit2 != digit:
-            digit2 = digit
-            change = True
-        elif digit_num == 3 and digit3 != digit:
-            digit3 = digit
-            change = True
-        if change:
-            num =int_to_seg(digit0) + int_to_seg(digit1)*10 + int_to_seg(digit2)*100 + int_to_seg(digit3)*1000
             dig0.show(int_to_seg(digit0))
+        elif digit_num == 1:
+            digit1 = digit
             dig1.show(int_to_seg(digit1))
+        elif digit_num == 2:
+            digit2 = digit
             dig2.show(int_to_seg(digit2))
+        elif digit_num == 3:
+            digit3 = digit
             dig3.show(int_to_seg(digit3))
-            cocotb.log.debug(f"digit num = {num}")
-            cocotb.log.debug(f"clock =  {int_to_seg(digit0)} {int_to_seg(digit1)} {int_to_seg(digit2)} {int_to_seg(digit3)}")
-            change = False
-        if int_to_seg(digit3) == 9:
-            break
+        # num =int_to_seg(digit0) + int_to_seg(digit1)*10 + int_to_seg(digit2)*100 + int_to_seg(digit3)*1000
+        # cocotb.log.debug(f"digit num = {num}")
+        cocotb.log.debug(f"clock =  {int_to_seg(digit0)} {int_to_seg(digit1)} {int_to_seg(digit2)} {int_to_seg(digit3)}")
         root.update()
+        time.sleep(0.01)
 
 
 
@@ -93,7 +93,7 @@ class Digit:
         self.canvas = canvas
         l = length
         self.segs = []
-        offsets = offsets = (
+        offsets = (
             (0, 0, 1, 0),  # top
             (1, 0, 1, 1),  # upper right
             (1, 1, 1, 2),  # lower right
@@ -113,6 +113,7 @@ class Digit:
             (1, 1, 1, 0, 0, 0, 0),  # 7
             (1, 1, 1, 1, 1, 1, 1),  # 8
             (1, 1, 1, 1, 0, 1, 1),  # 9
+            (0, 0, 0, 0, 0, 0, 0),  # disable
         )
         for x0, y0, x1, y1 in offsets:
             self.segs.append(canvas.create_line(
