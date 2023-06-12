@@ -44,7 +44,8 @@ async def cocotb_test(dut):
         # cocotb.log.debug(f"digit num = {num}")
         cocotb.log.debug(f"clock =  {int_to_seg(digit0)} {int_to_seg(digit1)} {int_to_seg(digit2)} {int_to_seg(digit3)}")
         root.update()
-        time.sleep(0.01)
+        if (realistic_gui):
+            time.sleep(0.01)
 
 
 
